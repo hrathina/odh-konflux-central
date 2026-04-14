@@ -1688,6 +1688,33 @@ spec:
               value: /workspace/odh-ci-artifacts
             - name: artifacts-dir-path
               value: 'test-artifacts/$(context.pipelineRun.name)'
+        - name: collect-tekton-logs
+          image: quay.io/redhat-appstudio/appstudio-utils:latest
+          env:
+            - name: PR_NAME
+              value: $(context.pipelineRun.name)
+            - name: PR_NAMESPACE
+              value: $(context.pipelineRun.namespace)
+          script: |
+            #!/bin/bash
+            # Best-effort log collection — must not block the OCI push or PR comment
+            set +e
+
+            LOGS_DIR="/workspace/odh-ci-artifacts/test-artifacts/${PR_NAME}/tekton-logs"
+            mkdir -p "${LOGS_DIR}"
+
+            kubectl get pr "${PR_NAME}" -n "${PR_NAMESPACE}" -o json \
+              | jq -r '.status.childReferences[].name' \
+              | while read -r taskrun; do
+                  POD_NAME=$(kubectl get tr "${taskrun}" -n "${PR_NAMESPACE}" -o json | jq -r '.status.podName // empty')
+                  if [ -n "${POD_NAME}" ]; then
+                    echo "Collecting logs for ${taskrun} (pod: ${POD_NAME})"
+                    kubectl logs -n "${PR_NAMESPACE}" "pod/${POD_NAME}" --all-containers > "${LOGS_DIR}/${taskrun}.log" 2>&1 || true
+                  fi
+                done
+
+            echo "Collected $(ls "${LOGS_DIR}" 2>/dev/null | wc -l) task log files"
+            exit 0
         - name: secure-push-oci
           ref:
             resolver: git
