@@ -3,7 +3,7 @@ kind: PipelineRun
 #
 metadata:
   annotations:
-    build.appstudio.openshift.io/repo: component-git-url?rev={{revision}}
+    build.appstudio.openshift.io/repo: https://github.com/opendatahub-io/kserve?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
@@ -29,6 +29,9 @@ spec:
     value: localmode-agent.Dockerfile
   - name: path-context
     value: .
+  - name: additional-tags
+    value:
+    - 'odh-stable'
   pipelineRef:
     resolver: git
     params:
