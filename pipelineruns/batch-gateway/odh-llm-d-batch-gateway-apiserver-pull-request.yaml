@@ -44,7 +44,7 @@ spec:
     - name: pathInRepo
       value: pipeline/multi-arch-container-build.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-odh-llm-d-batch-gateway-apiserver
+    serviceAccountName: build-pipeline-odh-llm-d-batch-gateway-apiserver-ci
   workspaces:
   - name: git-auth
     secret:
