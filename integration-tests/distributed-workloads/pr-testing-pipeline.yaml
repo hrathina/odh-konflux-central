@@ -227,10 +227,17 @@ spec:
                   GIT_COMMIT=$(echo "$row" | base64 -d | jq -r '.source.git.revision')
                   GIT_URL=$(echo "$row" | base64 -d | jq -r '.source.git.url')
 
-                  # Store git info from the first DW component for cloning DW repo later
-                  if [ -z "${DW_GIT_COMMIT:-}" ] && echo "${GIT_URL}" | grep -q "distributed-workloads"; then
-                    DW_GIT_COMMIT="${GIT_COMMIT}"
-                    DW_GIT_URL="${GIT_URL}"
+                  # Store git info for cloning DW repo later.
+                  # Prefer the CPU universal image (the ITS trigger component); fall back to any DW component.
+                  if echo "${GIT_URL}" | grep -q "distributed-workloads"; then
+                    if [ -z "${DW_GIT_COMMIT:-}" ]; then
+                      DW_GIT_COMMIT="${GIT_COMMIT}"
+                      DW_GIT_URL="${GIT_URL}"
+                    fi
+                    if [ "${COMPONENT_NAME}" = "odh-th06-cpu-torch291-py312-ci" ]; then
+                      DW_GIT_COMMIT="${GIT_COMMIT}"
+                      DW_GIT_URL="${GIT_URL}"
+                    fi
                   fi
 
                   echo "${COMPONENT_NAME} IMAGE: ${IMAGE}"
@@ -366,10 +373,13 @@ spec:
                 make deploy-rhoai
 
                 echo "Cloning distributed-workloads repo at PR commit..."
+                echo "DW_GIT_URL: ${DW_GIT_URL}"
+                echo "DW_GIT_COMMIT: ${DW_GIT_COMMIT}"
                 cd /workspace/source
-                git clone "${DW_GIT_URL}" dw_src
-                cd dw_src
-                git checkout "${DW_GIT_COMMIT}"
+                mkdir dw_src
+                git -C dw_src init
+                git -C dw_src fetch "${DW_GIT_URL}" "${DW_GIT_COMMIT}" --depth=1
+                git -C dw_src checkout FETCH_HEAD
 
                 echo "Running Smoke and Sanity tests..."
                 mkdir -p "${ARTIFACT_DIR}"
