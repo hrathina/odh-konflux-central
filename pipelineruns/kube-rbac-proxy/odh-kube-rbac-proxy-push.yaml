@@ -38,7 +38,7 @@ spec:
     - name: pathInRepo
       value: pipeline/multi-arch-container-build.yaml
   taskRunTemplate:
-      serviceAccountName: build-pipeline-odh-kube-rbac-proxy-ci
+    serviceAccountName: build-pipeline-odh-kube-rbac-proxy-ci
   workspaces:
   - name: git-auth
     secret:
