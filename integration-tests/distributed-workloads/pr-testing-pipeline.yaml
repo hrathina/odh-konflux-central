@@ -203,6 +203,8 @@ spec:
                   value: /workspace/artifacts-dir
                 - name: APPLICATIONS_NAMESPACE
                   value: kubeflow-trainer-system
+                - name: TEST_TIMEOUT_DOUBLE
+                  value: 40m
               workingDir: /workspace/source
               volumeMounts:
                 - name: credentials
