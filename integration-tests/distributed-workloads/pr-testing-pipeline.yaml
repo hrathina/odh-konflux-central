@@ -433,7 +433,7 @@ spec:
                 - name: repo-branch
                   value: 'ci-artifacts'
                 - name: sparse-file-path
-                  value: 'test-artifacts/docs'
+                  value: ''
                 - name: dest-path
                   value: 'test-artifacts/$(context.pipelineRun.name)'
                 - name: pipelinerun-name
